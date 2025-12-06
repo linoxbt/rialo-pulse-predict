@@ -6,6 +6,9 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import MarketDetail from "./pages/MarketDetail";
 import Portfolio from "./pages/Portfolio";
+import Auth from "./pages/Auth";
+import CreateMarket from "./pages/CreateMarket";
+import Leaderboard from "./pages/Leaderboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -20,7 +23,9 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/market/:id" element={<MarketDetail />} />
           <Route path="/portfolio" element={<Portfolio />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/create" element={<CreateMarket />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
