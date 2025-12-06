@@ -8,20 +8,32 @@ import {
   TrendingUp, 
   LayoutGrid, 
   User,
-  Search
+  Trophy,
+  Plus,
+  LogOut
 } from "lucide-react";
 import { useWallet } from "@/hooks/useWallet";
+import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { path: "/", label: "Markets", icon: LayoutGrid },
   { path: "/portfolio", label: "Portfolio", icon: TrendingUp },
+  { path: "/leaderboard", label: "Leaderboard", icon: Trophy },
 ];
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { isConnected, address, balance, isConnecting, connect, disconnect, formatAddress } = useWallet();
+  const { isAuthenticated, signOut, profile } = useAuth();
   const location = useLocation();
+
+  const handleDisconnect = async () => {
+    disconnect();
+    if (isAuthenticated) {
+      await signOut();
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/50 glass">
@@ -55,31 +67,36 @@ export function Header() {
           ))}
         </nav>
 
-        {/* Search and Wallet */}
+        {/* Wallet & Auth */}
         <div className="flex items-center gap-3">
-          {/* Search Button */}
-          <Button variant="ghost" size="icon" className="hidden sm:flex">
-            <Search className="w-4 h-4" />
-          </Button>
+          {isAuthenticated && (
+            <Link to="/create" className="hidden sm:block">
+              <Button variant="ghost" size="sm" className="gap-2">
+                <Plus className="w-4 h-4" />
+                Create
+              </Button>
+            </Link>
+          )}
 
-          {/* Wallet Connection */}
           {isConnected ? (
             <div className="flex items-center gap-2">
               <div className="hidden sm:flex flex-col items-end">
-                <span className="text-xs text-muted-foreground">Testnet Balance</span>
+                <span className="text-xs text-muted-foreground">
+                  {profile?.username || 'Testnet'}
+                </span>
                 <span className="text-sm font-semibold">{balance.toLocaleString()} RIA</span>
               </div>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={disconnect}
+                onClick={handleDisconnect}
                 className="gap-2"
               >
                 <User className="w-4 h-4" />
                 <span className="hidden sm:inline">{formatAddress(address!)}</span>
               </Button>
             </div>
-          ) : (
+          ) : isAuthenticated ? (
             <Button
               variant="wallet"
               size="sm"
@@ -92,6 +109,13 @@ export function Header() {
                 {isConnecting ? "Connecting..." : "Connect Wallet"}
               </span>
             </Button>
+          ) : (
+            <Link to="/auth">
+              <Button variant="wallet" size="sm" className="gap-2">
+                <User className="w-4 h-4" />
+                <span className="hidden sm:inline">Sign In</span>
+              </Button>
+            </Link>
           )}
 
           {/* Mobile Menu Button */}
@@ -126,6 +150,16 @@ export function Header() {
                 {item.label}
               </Link>
             ))}
+            {isAuthenticated && (
+              <Link
+                to="/create"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+              >
+                <Plus className="w-5 h-5" />
+                Create Market
+              </Link>
+            )}
           </nav>
         </div>
       )}

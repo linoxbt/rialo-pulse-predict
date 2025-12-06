@@ -143,6 +143,7 @@ export const mockMarkets: Market[] = [
 
 export const mockPositions: Position[] = [
   {
+    id: "pos-1",
     marketId: "1",
     marketTitle: "Will Bitcoin reach $150K by end of 2025?",
     outcome: "yes",
@@ -153,6 +154,7 @@ export const mockPositions: Position[] = [
     pnlPercent: 20
   },
   {
+    id: "pos-2",
     marketId: "2",
     marketTitle: "Will Rialo mainnet launch in Q1 2026?",
     outcome: "yes",

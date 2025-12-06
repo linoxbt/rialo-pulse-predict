@@ -14,7 +14,347 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      categories: {
+        Row: {
+          created_at: string
+          icon: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          icon: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          icon?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      market_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          market_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          market_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          market_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_comments_market_id_fkey"
+            columns: ["market_id"]
+            isOneToOne: false
+            referencedRelation: "markets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "market_comments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      market_outcomes: {
+        Row: {
+          created_at: string
+          id: string
+          market_id: string
+          name: string
+          price: number
+          total_shares: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          market_id: string
+          name: string
+          price?: number
+          total_shares?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          market_id?: string
+          name?: string
+          price?: number
+          total_shares?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_outcomes_market_id_fkey"
+            columns: ["market_id"]
+            isOneToOne: false
+            referencedRelation: "markets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      markets: {
+        Row: {
+          category_id: string | null
+          created_at: string
+          creator_id: string
+          description: string
+          end_date: string
+          id: string
+          image_url: string | null
+          liquidity: number
+          resolution_source: string
+          resolved_outcome: string | null
+          status: string
+          title: string
+          total_volume: number
+          updated_at: string
+        }
+        Insert: {
+          category_id?: string | null
+          created_at?: string
+          creator_id: string
+          description: string
+          end_date: string
+          id?: string
+          image_url?: string | null
+          liquidity?: number
+          resolution_source: string
+          resolved_outcome?: string | null
+          status?: string
+          title: string
+          total_volume?: number
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string | null
+          created_at?: string
+          creator_id?: string
+          description?: string
+          end_date?: string
+          id?: string
+          image_url?: string | null
+          liquidity?: number
+          resolution_source?: string
+          resolved_outcome?: string | null
+          status?: string
+          title?: string
+          total_volume?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "markets_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      positions: {
+        Row: {
+          avg_price: number
+          created_at: string
+          current_value: number
+          id: string
+          market_id: string
+          outcome_id: string
+          shares: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avg_price: number
+          created_at?: string
+          current_value?: number
+          id?: string
+          market_id: string
+          outcome_id: string
+          shares: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avg_price?: number
+          created_at?: string
+          current_value?: number
+          id?: string
+          market_id?: string
+          outcome_id?: string
+          shares?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "positions_market_id_fkey"
+            columns: ["market_id"]
+            isOneToOne: false
+            referencedRelation: "markets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "positions_outcome_id_fkey"
+            columns: ["outcome_id"]
+            isOneToOne: false
+            referencedRelation: "market_outcomes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "positions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      price_history: {
+        Row: {
+          id: string
+          outcome_id: string
+          price: number
+          timestamp: string
+        }
+        Insert: {
+          id?: string
+          outcome_id: string
+          price: number
+          timestamp?: string
+        }
+        Update: {
+          id?: string
+          outcome_id?: string
+          price?: number
+          timestamp?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "price_history_outcome_id_fkey"
+            columns: ["outcome_id"]
+            isOneToOne: false
+            referencedRelation: "market_outcomes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          id: string
+          total_profit: number
+          total_trades: number
+          total_volume: number
+          updated_at: string
+          username: string | null
+          wallet_address: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          id: string
+          total_profit?: number
+          total_trades?: number
+          total_volume?: number
+          updated_at?: string
+          username?: string | null
+          wallet_address?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          total_profit?: number
+          total_trades?: number
+          total_volume?: number
+          updated_at?: string
+          username?: string | null
+          wallet_address?: string | null
+        }
+        Relationships: []
+      }
+      trades: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          market_id: string
+          outcome_id: string
+          price: number
+          shares: number
+          side: string
+          status: string
+          tx_hash: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          market_id: string
+          outcome_id: string
+          price: number
+          shares: number
+          side: string
+          status?: string
+          tx_hash?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          market_id?: string
+          outcome_id?: string
+          price?: number
+          shares?: number
+          side?: string
+          status?: string
+          tx_hash?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trades_market_id_fkey"
+            columns: ["market_id"]
+            isOneToOne: false
+            referencedRelation: "markets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trades_outcome_id_fkey"
+            columns: ["outcome_id"]
+            isOneToOne: false
+            referencedRelation: "market_outcomes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trades_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
