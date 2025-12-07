@@ -11,7 +11,7 @@ import { Wallet, TrendingUp, TrendingDown, History, PieChart, LogIn } from "luci
 import { Link } from "react-router-dom";
 
 export default function Portfolio() {
-  const { isConnected, balance, connect } = useWallet();
+  const { isConnected, balance, balanceSymbol, connect } = useWallet();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   
   const { data: positions = [], isLoading: positionsLoading } = useUserPositions(user?.id);
@@ -94,9 +94,9 @@ export default function Portfolio() {
             <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
               <Wallet className="w-5 h-5 text-primary" />
             </div>
-            <span className="text-sm text-muted-foreground">Available Balance</span>
+            <span className="text-sm text-muted-foreground">Wallet Balance</span>
           </div>
-          <p className="text-3xl font-bold">{balance.toLocaleString()} RIA</p>
+          <p className="text-3xl font-bold">{balance.toFixed(4)} {balanceSymbol}</p>
         </div>
         
         <div className="bg-card rounded-xl border border-border/50 p-6 card-gradient">

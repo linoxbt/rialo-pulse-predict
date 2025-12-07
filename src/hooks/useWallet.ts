@@ -1,112 +1,33 @@
-import { useState, useCallback, useEffect } from 'react';
-import { generateWalletAddress, formatAddress as formatAddr } from '@/lib/blockchain';
-import { useAuth } from './useAuth';
-import { supabase } from '@/integrations/supabase/client';
-
-interface WalletState {
-  isConnected: boolean;
-  address: string | null;
-  balance: number;
-  network: string;
-}
-
-const STORAGE_KEY = 'rialo_wallet';
+import { useAccount, useBalance, useDisconnect } from 'wagmi';
+import { useConnectModal } from '@rainbow-me/rainbowkit';
+import { useCallback } from 'react';
+import { formatUnits } from 'viem';
 
 export function useWallet() {
-  const { profile, updateProfile, isAuthenticated } = useAuth();
-  const [wallet, setWallet] = useState<WalletState>(() => {
-    // Try to restore from localStorage
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        // Ignore parse errors
-      }
-    }
-    return {
-      isConnected: false,
-      address: null,
-      balance: 0,
-      network: 'rialo-testnet'
-    };
-  });
-  const [isConnecting, setIsConnecting] = useState(false);
+  const { address, isConnected, isConnecting } = useAccount();
+  const { data: balanceData } = useBalance({ address });
+  const { disconnect } = useDisconnect();
+  const { openConnectModal } = useConnectModal();
 
-  // Sync wallet state with localStorage
-  useEffect(() => {
-    if (wallet.isConnected) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(wallet));
-    } else {
-      localStorage.removeItem(STORAGE_KEY);
-    }
-  }, [wallet]);
+  const connect = useCallback(() => {
+    openConnectModal?.();
+  }, [openConnectModal]);
 
-  // Update balance from profile
-  useEffect(() => {
-    if (profile?.wallet_address && wallet.address === profile.wallet_address) {
-      // Could fetch balance from blockchain here
-    }
-  }, [profile, wallet.address]);
-
-  const connect = useCallback(async () => {
-    setIsConnecting(true);
-    
-    // Simulate wallet connection delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Check if user has existing wallet address in profile
-    let walletAddress = profile?.wallet_address;
-    
-    if (!walletAddress) {
-      // Generate new wallet address
-      walletAddress = generateWalletAddress();
-      
-      // Save to profile if authenticated
-      if (isAuthenticated) {
-        await updateProfile({ wallet_address: walletAddress });
-      }
-    }
-    
-    const newWallet = {
-      isConnected: true,
-      address: walletAddress,
-      balance: 1000, // Mock RIA testnet tokens
-      network: 'rialo-testnet'
-    };
-    
-    setWallet(newWallet);
-    setIsConnecting(false);
-    
-    return newWallet;
-  }, [profile, isAuthenticated, updateProfile]);
-
-  const disconnect = useCallback(() => {
-    setWallet({
-      isConnected: false,
-      address: null,
-      balance: 0,
-      network: 'rialo-testnet'
-    });
+  const formatAddress = useCallback((addr: string) => {
+    if (!addr) return '';
+    return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
   }, []);
 
-  const updateBalance = useCallback((newBalance: number) => {
-    setWallet(prev => ({
-      ...prev,
-      balance: newBalance
-    }));
-  }, []);
-
-  const formatAddress = useCallback((address: string) => {
-    return formatAddr(address);
-  }, []);
+  const balance = balanceData ? Number(formatUnits(balanceData.value, balanceData.decimals)) : 0;
 
   return {
-    ...wallet,
+    isConnected,
     isConnecting,
+    address: address || null,
+    balance,
+    balanceSymbol: balanceData?.symbol || 'ETH',
     connect,
     disconnect,
-    updateBalance,
-    formatAddress
+    formatAddress,
   };
 }

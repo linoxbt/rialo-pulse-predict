@@ -27,14 +27,13 @@ const Index = () => {
         <div>
           <div className="flex items-center gap-2 mb-2">
             <Sparkles className="w-5 h-5 text-primary" />
-            <span className="text-sm font-medium text-primary">Rialo Testnet</span>
+            <span className="text-sm font-medium text-primary">Live Markets</span>
           </div>
           <h1 className="font-display text-3xl md:text-4xl font-bold mb-2">
             Prediction Markets
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl">
-            Trade on real-world events with Rialo's event-driven blockchain. 
-            Fast, transparent, and decentralized.
+            Trade on real-world events. Fast, transparent, and decentralized.
           </p>
         </div>
         <Link to="/create">
