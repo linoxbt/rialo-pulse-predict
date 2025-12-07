@@ -2,6 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { TradingPanel } from "@/components/trading/TradingPanel";
 import { PriceChart } from "@/components/charts/PriceChart";
+import { MarketComments } from "@/components/markets/MarketComments";
 import { useMarket, usePriceHistory } from "@/hooks/useMarkets";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -178,10 +179,12 @@ export default function MarketDetail() {
               </div>
             </div>
 
-            {/* Chart */}
+            {/* Chart with realtime updates */}
             <PriceChart 
               yesHistory={yesHistory} 
               noHistory={noHistory}
+              yesOutcomeId={yesOutcome?.id}
+              noOutcomeId={noOutcome?.id}
               isLoading={yesLoading || noLoading}
             />
           </div>
@@ -221,6 +224,9 @@ export default function MarketDetail() {
               </div>
             </div>
           </div>
+
+          {/* Comments Section */}
+          <MarketComments marketId={market.id} />
         </div>
 
         {/* Trading Panel */}
