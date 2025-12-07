@@ -18,7 +18,7 @@ interface TradingPanelProps {
 export function TradingPanel({ market }: TradingPanelProps) {
   const [selectedOutcome, setSelectedOutcome] = useState<'yes' | 'no'>('yes');
   const [amount, setAmount] = useState<string>('');
-  const { isConnected, balance, connect, updateBalance } = useWallet();
+  const { isConnected, balance, balanceSymbol, connect } = useWallet();
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const executeTrade = useExecuteTrade();
@@ -28,7 +28,7 @@ export function TradingPanel({ market }: TradingPanelProps) {
   );
   const price = selectedOutcome === 'yes' ? market.yesPrice : market.noPrice;
   const shares = amount ? parseFloat(amount) / price : 0;
-  const potentialReturn = shares * 1; // Each share pays $1 if correct
+  const potentialReturn = shares * 1;
   const potentialProfit = potentialReturn - parseFloat(amount || '0');
 
   const handleTrade = async () => {
@@ -51,15 +51,6 @@ export function TradingPanel({ market }: TradingPanelProps) {
       return;
     }
 
-    if (parseFloat(amount) > balance) {
-      toast({
-        title: "Insufficient balance",
-        description: "You don't have enough RIA tokens for this trade.",
-        variant: "destructive"
-      });
-      return;
-    }
-
     if (!selectedOutcomeData || !user) {
       toast({
         title: "Error",
@@ -72,7 +63,7 @@ export function TradingPanel({ market }: TradingPanelProps) {
     try {
       const result = await executeTrade.mutateAsync({
         userId: user.id,
-        walletAddress: user.id, // Using user id as wallet in simulation
+        walletAddress: user.id,
         marketId: market.id,
         outcomeId: selectedOutcomeData.id,
         outcomeName: selectedOutcomeData.name,
@@ -82,21 +73,18 @@ export function TradingPanel({ market }: TradingPanelProps) {
         shares: shares
       });
 
-      // Update wallet balance
-      updateBalance(balance - parseFloat(amount));
-
       toast({
         title: "Trade executed!",
         description: (
           <div className="flex flex-col gap-1">
-            <span>Bought {shares.toFixed(2)} {selectedOutcome.toUpperCase()} shares for {amount} RIA</span>
+            <span>Bought {shares.toFixed(2)} {selectedOutcome.toUpperCase()} shares</span>
             <a 
               href={getExplorerUrl(result.txHash)}
               target="_blank"
               rel="noopener noreferrer"
               className="text-primary underline text-xs"
             >
-              View on Rialo Explorer →
+              View transaction →
             </a>
           </div>
         ),
@@ -143,7 +131,7 @@ export function TradingPanel({ market }: TradingPanelProps) {
 
       {/* Amount Input */}
       <div className="mb-4">
-        <label className="text-sm text-muted-foreground mb-2 block">Amount (RIA)</label>
+        <label className="text-sm text-muted-foreground mb-2 block">Amount (USD)</label>
         <Input
           type="number"
           placeholder="0.00"
@@ -154,7 +142,7 @@ export function TradingPanel({ market }: TradingPanelProps) {
         />
         {isConnected && (
           <p className="text-xs text-muted-foreground mt-1">
-            Balance: {balance.toLocaleString()} RIA
+            Balance: {balance.toFixed(4)} {balanceSymbol}
           </p>
         )}
       </div>
@@ -168,7 +156,7 @@ export function TradingPanel({ market }: TradingPanelProps) {
             disabled={executeTrade.isPending}
             className="flex-1 py-1.5 text-xs font-medium rounded bg-secondary hover:bg-secondary/80 transition-colors disabled:opacity-50"
           >
-            {val}
+            ${val}
           </button>
         ))}
       </div>
@@ -224,9 +212,9 @@ export function TradingPanel({ market }: TradingPanelProps) {
         )}
       </Button>
 
-      {/* Testnet Notice */}
+      {/* Notice */}
       <p className="text-xs text-muted-foreground text-center mt-3">
-        Trading on Rialo Testnet • No real funds required
+        Trades are final • DYOR
       </p>
     </div>
   );

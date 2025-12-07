@@ -1,18 +1,15 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { 
-  Wallet, 
   Menu, 
   X, 
   TrendingUp, 
   LayoutGrid, 
-  User,
   Trophy,
-  Plus,
-  LogOut
+  Plus
 } from "lucide-react";
-import { useWallet } from "@/hooks/useWallet";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 
@@ -24,27 +21,31 @@ const navItems = [
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { isConnected, address, balance, isConnecting, connect, disconnect, formatAddress } = useWallet();
-  const { isAuthenticated, signOut, profile } = useAuth();
+  const { isAuthenticated } = useAuth();
   const location = useLocation();
-
-  const handleDisconnect = async () => {
-    disconnect();
-    if (isAuthenticated) {
-      await signOut();
-    }
-  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/50 glass">
       <div className="container flex h-16 items-center justify-between px-4">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3 group">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center transform group-hover:scale-105 transition-transform">
-            <span className="font-display font-bold text-primary-foreground text-lg">R</span>
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center transform group-hover:scale-105 transition-transform shadow-lg">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              className="w-5 h-5"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M12 2L2 7l10 5 10-5-10-5z" className="fill-primary-foreground/20" />
+              <path d="M2 17l10 5 10-5" />
+              <path d="M2 12l10 5 10-5" />
+            </svg>
           </div>
           <span className="font-display font-bold text-xl hidden sm:block">
-            Rialo<span className="text-primary">Predict</span>
+            Predict<span className="text-primary">ix</span>
           </span>
         </Link>
 
@@ -78,45 +79,15 @@ export function Header() {
             </Link>
           )}
 
-          {isConnected ? (
-            <div className="flex items-center gap-2">
-              <div className="hidden sm:flex flex-col items-end">
-                <span className="text-xs text-muted-foreground">
-                  {profile?.username || 'Testnet'}
-                </span>
-                <span className="text-sm font-semibold">{balance.toLocaleString()} RIA</span>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleDisconnect}
-                className="gap-2"
-              >
-                <User className="w-4 h-4" />
-                <span className="hidden sm:inline">{formatAddress(address!)}</span>
-              </Button>
-            </div>
-          ) : isAuthenticated ? (
-            <Button
-              variant="wallet"
-              size="sm"
-              onClick={connect}
-              disabled={isConnecting}
-              className="gap-2"
-            >
-              <Wallet className="w-4 h-4" />
-              <span className="hidden sm:inline">
-                {isConnecting ? "Connecting..." : "Connect Wallet"}
-              </span>
-            </Button>
-          ) : (
-            <Link to="/auth">
-              <Button variant="wallet" size="sm" className="gap-2">
-                <User className="w-4 h-4" />
-                <span className="hidden sm:inline">Sign In</span>
-              </Button>
-            </Link>
-          )}
+          {/* RainbowKit Connect Button */}
+          <ConnectButton 
+            chainStatus="icon"
+            showBalance={false}
+            accountStatus={{
+              smallScreen: 'avatar',
+              largeScreen: 'full',
+            }}
+          />
 
           {/* Mobile Menu Button */}
           <Button
