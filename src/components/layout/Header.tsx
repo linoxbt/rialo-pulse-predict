@@ -10,7 +10,7 @@ import {
   Trophy,
   Plus
 } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -21,7 +21,7 @@ const navItems = [
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { isAuthenticated } = useAuth();
+  const { isAdmin } = useUserRole();
   const location = useLocation();
 
   return (
@@ -70,7 +70,7 @@ export function Header() {
 
         {/* Wallet & Auth */}
         <div className="flex items-center gap-3">
-          {isAuthenticated && (
+          {isAdmin && (
             <Link to="/create" className="hidden sm:block">
               <Button variant="ghost" size="sm" className="gap-2">
                 <Plus className="w-4 h-4" />
@@ -121,7 +121,7 @@ export function Header() {
                 {item.label}
               </Link>
             ))}
-            {isAuthenticated && (
+            {isAdmin && (
               <Link
                 to="/create"
                 onClick={() => setMobileMenuOpen(false)}
