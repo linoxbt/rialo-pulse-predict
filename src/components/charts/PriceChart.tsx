@@ -1,7 +1,6 @@
-import { useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import {
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   Tooltip,
@@ -14,6 +13,8 @@ import { PriceHistory } from '@/types/market';
 interface PriceChartProps {
   yesHistory: PriceHistory[];
   noHistory: PriceHistory[];
+  yesOutcomeId?: string;
+  noOutcomeId?: string;
   isLoading?: boolean;
 }
 
@@ -27,12 +28,50 @@ function formatTime(timestamp: string): string {
   });
 }
 
-export function PriceChart({ yesHistory, noHistory, isLoading }: PriceChartProps) {
+export function PriceChart({ yesHistory, noHistory, yesOutcomeId, noOutcomeId, isLoading }: PriceChartProps) {
+  const [realtimeYesHistory, setRealtimeYesHistory] = useState<PriceHistory[]>(yesHistory);
+  const [realtimeNoHistory, setRealtimeNoHistory] = useState<PriceHistory[]>(noHistory);
+
+  // Sync with props
+  useEffect(() => {
+    setRealtimeYesHistory(yesHistory);
+    setRealtimeNoHistory(noHistory);
+  }, [yesHistory, noHistory]);
+
+  // Subscribe to realtime price updates
+  useEffect(() => {
+    if (!yesOutcomeId && !noOutcomeId) return;
+
+    const channel = supabase
+      .channel('price-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'price_history'
+        },
+        (payload) => {
+          const newPrice = payload.new as PriceHistory;
+          if (newPrice.outcome_id === yesOutcomeId) {
+            setRealtimeYesHistory(prev => [...prev, newPrice]);
+          } else if (newPrice.outcome_id === noOutcomeId) {
+            setRealtimeNoHistory(prev => [...prev, newPrice]);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [yesOutcomeId, noOutcomeId]);
+
   const chartData = useMemo(() => {
     // Combine yes and no price history into a single array
     const allPoints = new Map<string, { timestamp: string; yesPrice?: number; noPrice?: number }>();
     
-    yesHistory.forEach((point) => {
+    realtimeYesHistory.forEach((point) => {
       const key = point.timestamp;
       if (!allPoints.has(key)) {
         allPoints.set(key, { timestamp: key, yesPrice: Number(point.price) * 100 });
@@ -41,7 +80,7 @@ export function PriceChart({ yesHistory, noHistory, isLoading }: PriceChartProps
       }
     });
 
-    noHistory.forEach((point) => {
+    realtimeNoHistory.forEach((point) => {
       const key = point.timestamp;
       if (!allPoints.has(key)) {
         allPoints.set(key, { timestamp: key, noPrice: Number(point.price) * 100 });
@@ -67,7 +106,7 @@ export function PriceChart({ yesHistory, noHistory, isLoading }: PriceChartProps
         time: formatTime(point.timestamp),
       };
     });
-  }, [yesHistory, noHistory]);
+  }, [realtimeYesHistory, realtimeNoHistory]);
 
   // Generate mock data if no history exists
   const displayData = useMemo(() => {
