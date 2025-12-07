@@ -1,9 +1,11 @@
 import { useParams, Link } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { TradingPanel } from "@/components/trading/TradingPanel";
-import { mockMarkets } from "@/data/mockMarkets";
+import { PriceChart } from "@/components/charts/PriceChart";
+import { useMarket, usePriceHistory } from "@/hooks/useMarkets";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { 
   ArrowLeft, 
   Clock, 
@@ -22,7 +24,7 @@ function formatVolume(volume: number): string {
   if (volume >= 1000) {
     return `$${(volume / 1000).toFixed(1)}K`;
   }
-  return `$${volume}`;
+  return `$${volume.toFixed(0)}`;
 }
 
 function formatDate(dateString: string): string {
@@ -36,9 +38,33 @@ function formatDate(dateString: string): string {
 
 export default function MarketDetail() {
   const { id } = useParams();
-  const market = mockMarkets.find(m => m.id === id);
+  const { data: market, isLoading, error } = useMarket(id || '');
+  
+  // Get price history for both outcomes
+  const yesOutcome = market?.outcomes.find(o => o.name.toLowerCase() === 'yes');
+  const noOutcome = market?.outcomes.find(o => o.name.toLowerCase() === 'no');
+  
+  const { data: yesHistory = [], isLoading: yesLoading } = usePriceHistory(yesOutcome?.id || '');
+  const { data: noHistory = [], isLoading: noLoading } = usePriceHistory(noOutcome?.id || '');
 
-  if (!market) {
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="space-y-6">
+          <Skeleton className="h-8 w-32" />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-6">
+              <Skeleton className="h-48 w-full" />
+              <Skeleton className="h-64 w-full" />
+            </div>
+            <Skeleton className="h-96 w-full" />
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error || !market) {
     return (
       <Layout>
         <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -54,7 +80,7 @@ export default function MarketDetail() {
     );
   }
 
-  const yesChange = market.outcomes[0]?.change24h || 0;
+  const yesChange = yesOutcome?.change24h || 0;
   const isPositive = yesChange >= 0;
 
   return (
@@ -88,7 +114,7 @@ export default function MarketDetail() {
                     {market.category}
                   </Badge>
                   <Badge variant="outline" className="text-primary border-primary/30">
-                    Active
+                    {market.status === 'active' ? 'Active' : market.status}
                   </Badge>
                 </div>
                 <h1 className="font-display text-2xl font-bold mb-2">{market.title}</h1>
@@ -114,7 +140,7 @@ export default function MarketDetail() {
             </div>
           </div>
 
-          {/* Price Chart Placeholder */}
+          {/* Price Chart */}
           <div className="bg-card rounded-xl border border-border/50 p-6 card-gradient">
             <h2 className="font-semibold mb-4">Price History</h2>
             
@@ -152,12 +178,12 @@ export default function MarketDetail() {
               </div>
             </div>
 
-            {/* Simplified Chart */}
-            <div className="h-48 bg-secondary/30 rounded-lg flex items-center justify-center border border-border/50">
-              <span className="text-muted-foreground text-sm">
-                Price chart coming soon
-              </span>
-            </div>
+            {/* Chart */}
+            <PriceChart 
+              yesHistory={yesHistory} 
+              noHistory={noHistory}
+              isLoading={yesLoading || noLoading}
+            />
           </div>
 
           {/* Description */}
@@ -166,6 +192,11 @@ export default function MarketDetail() {
             <p className="text-muted-foreground leading-relaxed">
               {market.description}
             </p>
+            {market.resolution_source && (
+              <p className="text-sm text-muted-foreground mt-4">
+                <span className="font-medium">Resolution source:</span> {market.resolution_source}
+              </p>
+            )}
           </div>
 
           {/* Market Stats */}

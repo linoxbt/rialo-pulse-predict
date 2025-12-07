@@ -1,10 +1,19 @@
-import { Position } from "@/types/market";
 import { Link } from "react-router-dom";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface PositionCardProps {
-  position: Position;
+  position: {
+    id: string;
+    marketId: string;
+    marketTitle: string;
+    outcome: 'yes' | 'no';
+    shares: number;
+    avgPrice: number;
+    currentPrice: number;
+    pnl: number;
+    pnlPercent: number;
+  };
 }
 
 export function PositionCard({ position }: PositionCardProps) {
@@ -39,7 +48,7 @@ export function PositionCard({ position }: PositionCardProps) {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <p className="text-xs text-muted-foreground mb-1">Shares</p>
-            <p className="font-semibold">{position.shares}</p>
+            <p className="font-semibold">{position.shares.toFixed(2)}</p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground mb-1">Avg Price</p>

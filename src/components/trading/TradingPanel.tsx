@@ -4,8 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useWallet } from "@/hooks/useWallet";
+import { useAuth } from "@/hooks/useAuth";
+import { useExecuteTrade } from "@/hooks/useTrading";
 import { toast } from "@/hooks/use-toast";
-import { Wallet, ArrowRight } from "lucide-react";
+import { Wallet, ArrowRight, Loader2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { getExplorerUrl } from "@/lib/blockchain";
 
 interface TradingPanelProps {
   market: Market;
@@ -14,14 +18,25 @@ interface TradingPanelProps {
 export function TradingPanel({ market }: TradingPanelProps) {
   const [selectedOutcome, setSelectedOutcome] = useState<'yes' | 'no'>('yes');
   const [amount, setAmount] = useState<string>('');
-  const { isConnected, balance, connect } = useWallet();
+  const { isConnected, balance, connect, updateBalance } = useWallet();
+  const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  const executeTrade = useExecuteTrade();
 
+  const selectedOutcomeData = market.outcomes.find(
+    o => o.name.toLowerCase() === selectedOutcome
+  );
   const price = selectedOutcome === 'yes' ? market.yesPrice : market.noPrice;
   const shares = amount ? parseFloat(amount) / price : 0;
   const potentialReturn = shares * 1; // Each share pays $1 if correct
   const potentialProfit = potentialReturn - parseFloat(amount || '0');
 
-  const handleTrade = () => {
+  const handleTrade = async () => {
+    if (!isAuthenticated) {
+      navigate('/auth');
+      return;
+    }
+
     if (!isConnected) {
       connect();
       return;
@@ -45,11 +60,55 @@ export function TradingPanel({ market }: TradingPanelProps) {
       return;
     }
 
-    toast({
-      title: "Trade submitted!",
-      description: `Buying ${shares.toFixed(2)} ${selectedOutcome.toUpperCase()} shares for ${amount} RIA on Rialo Testnet.`,
-    });
-    setAmount('');
+    if (!selectedOutcomeData || !user) {
+      toast({
+        title: "Error",
+        description: "Invalid market data or user not found.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const result = await executeTrade.mutateAsync({
+        userId: user.id,
+        walletAddress: user.id, // Using user id as wallet in simulation
+        marketId: market.id,
+        outcomeId: selectedOutcomeData.id,
+        outcomeName: selectedOutcomeData.name,
+        side: 'buy',
+        amount: parseFloat(amount),
+        price: price,
+        shares: shares
+      });
+
+      // Update wallet balance
+      updateBalance(balance - parseFloat(amount));
+
+      toast({
+        title: "Trade executed!",
+        description: (
+          <div className="flex flex-col gap-1">
+            <span>Bought {shares.toFixed(2)} {selectedOutcome.toUpperCase()} shares for {amount} RIA</span>
+            <a 
+              href={getExplorerUrl(result.txHash)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary underline text-xs"
+            >
+              View on Rialo Explorer →
+            </a>
+          </div>
+        ),
+      });
+      setAmount('');
+    } catch (error: any) {
+      toast({
+        title: "Trade failed",
+        description: error.message || "An error occurred while executing the trade.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -91,6 +150,7 @@ export function TradingPanel({ market }: TradingPanelProps) {
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           className="text-lg font-semibold"
+          disabled={executeTrade.isPending}
         />
         {isConnected && (
           <p className="text-xs text-muted-foreground mt-1">
@@ -105,7 +165,8 @@ export function TradingPanel({ market }: TradingPanelProps) {
           <button
             key={val}
             onClick={() => setAmount(val.toString())}
-            className="flex-1 py-1.5 text-xs font-medium rounded bg-secondary hover:bg-secondary/80 transition-colors"
+            disabled={executeTrade.isPending}
+            className="flex-1 py-1.5 text-xs font-medium rounded bg-secondary hover:bg-secondary/80 transition-colors disabled:opacity-50"
           >
             {val}
           </button>
@@ -138,8 +199,19 @@ export function TradingPanel({ market }: TradingPanelProps) {
         className="w-full"
         variant={selectedOutcome === 'yes' ? 'yesActive' : 'noActive'}
         size="lg"
+        disabled={executeTrade.isPending}
       >
-        {!isConnected ? (
+        {executeTrade.isPending ? (
+          <>
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            Processing...
+          </>
+        ) : !isAuthenticated ? (
+          <>
+            <Wallet className="w-4 h-4 mr-2" />
+            Sign In to Trade
+          </>
+        ) : !isConnected ? (
           <>
             <Wallet className="w-4 h-4 mr-2" />
             Connect Wallet

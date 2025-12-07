@@ -1,6 +1,18 @@
-import { Trade } from "@/types/market";
 import { cn } from "@/lib/utils";
 import { ExternalLink } from "lucide-react";
+import { getExplorerUrl } from "@/lib/blockchain";
+
+interface Trade {
+  id: string;
+  marketTitle: string;
+  outcome: 'yes' | 'no';
+  type: 'buy' | 'sell';
+  shares: number;
+  price: number;
+  total: number;
+  timestamp: string;
+  txHash: string;
+}
 
 interface TradeHistoryProps {
   trades: Trade[];
@@ -56,19 +68,21 @@ export function TradeHistory({ trades }: TradeHistoryProps) {
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-4">
               <span className="text-muted-foreground">
-                {trade.shares} shares @ {(trade.price * 100).toFixed(1)}¢
+                {trade.shares.toFixed(2)} shares @ {(trade.price * 100).toFixed(1)}¢
               </span>
             </div>
             <div className="flex items-center gap-2">
               <span className="font-semibold">${trade.total.toFixed(2)}</span>
-              <a 
-                href={`https://testnet.rialo.io/tx/${trade.txHash}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:text-primary/80 transition-colors"
-              >
-                <ExternalLink className="w-3 h-3" />
-              </a>
+              {trade.txHash && (
+                <a 
+                  href={getExplorerUrl(trade.txHash)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:text-primary/80 transition-colors"
+                >
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              )}
             </div>
           </div>
         </div>
