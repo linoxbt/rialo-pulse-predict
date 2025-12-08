@@ -1,16 +1,4 @@
 import { getDefaultConfig } from '@rainbow-me/rainbowkit';
-import { 
-  mainnet, 
-  polygon, 
-  arbitrum, 
-  optimism, 
-  base,
-  sepolia,
-  polygonAmoy,
-  arbitrumSepolia,
-  optimismSepolia,
-  baseSepolia
-} from 'wagmi/chains';
 import { defineChain } from 'viem';
 
 // Define Rialo Testnet chain
@@ -36,20 +24,6 @@ export const rialoTestnet = defineChain({
 export const config = getDefaultConfig({
   appName: 'Predictix',
   projectId: 'YOUR_WALLETCONNECT_PROJECT_ID', // Get from https://cloud.walletconnect.com
-  chains: [
-    // Mainnets
-    mainnet, 
-    polygon, 
-    arbitrum, 
-    optimism, 
-    base,
-    // Testnets
-    rialoTestnet,
-    sepolia,
-    polygonAmoy,
-    arbitrumSepolia,
-    optimismSepolia,
-    baseSepolia
-  ],
+  chains: [rialoTestnet],
   ssr: false,
 });
