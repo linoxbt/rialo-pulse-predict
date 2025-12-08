@@ -52,7 +52,7 @@ export default function Leaderboard() {
           <h1 className="font-display text-3xl md:text-4xl font-bold">Leaderboard</h1>
         </div>
         <p className="text-muted-foreground text-lg">
-          Top traders on Predictix ranked by profit
+          Top traders on RialoPredict ranked by profit
         </p>
       </div>
 

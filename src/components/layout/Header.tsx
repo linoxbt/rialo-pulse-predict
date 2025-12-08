@@ -12,8 +12,6 @@ import {
 } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
 import { cn } from "@/lib/utils";
-import { FaucetButton } from "@/components/FaucetButton";
-import predictixLogo from "@/assets/predictix-logo.png";
 
 const navItems = [
   { path: "/", label: "Markets", icon: LayoutGrid },
@@ -31,11 +29,21 @@ export function Header() {
       <div className="container flex h-16 items-center justify-between px-4">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3 group">
-          <img
-            src={predictixLogo}
-            alt="Predictix"
-            className="w-9 h-9 rounded-xl transform group-hover:scale-105 transition-transform"
-          />
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center transform group-hover:scale-105 transition-transform shadow-lg">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              className="w-5 h-5"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M12 2L2 7l10 5 10-5-10-5z" className="fill-primary-foreground/20" />
+              <path d="M2 17l10 5 10-5" />
+              <path d="M2 12l10 5 10-5" />
+            </svg>
+          </div>
           <span className="font-display font-bold text-xl hidden sm:block">
             Predict<span className="text-primary">ix</span>
           </span>
@@ -62,8 +70,6 @@ export function Header() {
 
         {/* Wallet & Auth */}
         <div className="flex items-center gap-3">
-          <FaucetButton />
-          
           {isAdmin && (
             <Link to="/create" className="hidden sm:block">
               <Button variant="ghost" size="sm" className="gap-2">
