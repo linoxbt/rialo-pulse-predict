@@ -5,9 +5,7 @@ import { MarketGrid } from "@/components/markets/MarketGrid";
 import { StatsBar } from "@/components/markets/StatsBar";
 import { useMarkets } from "@/hooks/useMarkets";
 import { Category } from "@/types/market";
-import { Sparkles, Plus } from "lucide-react";
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import { Sparkles } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const Index = () => {
@@ -35,13 +33,7 @@ const Index = () => {
           <p className="text-muted-foreground text-lg max-w-2xl">
             Trade on real-world events. Fast, transparent, and decentralized.
           </p>
-        </div>
-        <Link to="/create">
-          <Button variant="wallet" className="hidden md:flex gap-2">
-            <Plus className="w-4 h-4" />
-            Create Market
-          </Button>
-        </Link>
+      </div>
       </div>
 
       {/* Stats */}
